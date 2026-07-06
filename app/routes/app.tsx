@@ -24,6 +24,7 @@ export default function App() {
         <Link to="/app" rel="home">Dashboard</Link>
         <Link to="/app/upload">Upload CSV</Link>
         <Link to="/app/pages">Pages</Link>
+        <Link to="/app/settings">⚙️ Settings</Link>
       </NavMenu>
       <Outlet />
     </AppProvider>

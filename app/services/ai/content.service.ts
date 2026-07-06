@@ -25,12 +25,87 @@ export interface PageContent {
 }
 
 // Helper to generate slug from keyword
-export function generateSlug(keyword: string, locale: string = "en-us"): string { // Helper to generate slug with locale
+export function generateSlug(keyword: string, locale: string = "en-us"): string {
   const baseSlug = keyword
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
   return `${baseSlug}-${locale}`;
+}
+
+function cleanJsonResponse(text: string): string {
+  // Remove markdown code blocks
+  let cleaned = text.replace(/```json\s*/g, "").replace(/```\s*/g, "");
+  
+  // Try to find JSON object
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    cleaned = jsonMatch[0];
+  }
+  
+  // Remove trailing commas
+  cleaned = cleaned.replace(/,\s*}/g, "}").replace(/,\s*\]/g, "]");
+  
+  // Fix unquoted keys (including those with special characters)
+  // This handles: { key: "value" } -> { "key": "value" }
+  cleaned = cleaned.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g, '$1"$2"$3');
+  
+  // Fix keys that are already quoted but incomplete: { "key: "value" } -> { "key": "value" }
+  cleaned = cleaned.replace(/"([^"]+?)\s*:\s*"/g, function(match, key) {
+    return '"' + key.trim() + '": "';
+  });
+  
+  // Fix missing quotes around keys: { key: value } -> { "key": "value" }
+  cleaned = cleaned.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g, '$1"$2"$3');
+  
+  // Fix unescaped double quotes inside strings
+  // Pattern: : "text with "quotes" inside"
+  cleaned = cleaned.replace(/: "([^"]*?)"([^"]*?)"([^"]*?)"/g, function(match, p1, p2, p3) {
+    let inner = p1 + p2 + p3;
+    inner = inner.replace(/"/g, '\\"');
+    return ': "' + inner + '"';
+  });
+  
+  // Fix more complex cases: multiple quotes inside strings
+  cleaned = cleaned.replace(/: "([^"]*?)"([^"]*?)"([^"]*?)"([^"]*?)"/g, function(match, p1, p2, p3, p4) {
+    let inner = p1 + p2 + p3 + p4;
+    inner = inner.replace(/"/g, '\\"');
+    return ': "' + inner + '"';
+  });
+  
+  // Fix missing commas between properties: "key1": "value1" "key2": "value2"
+  cleaned = cleaned.replace(/"}\s*"([^"]+)"/g, '"}, "$1"');
+  
+  // Fix missing closing quotes on keys
+  cleaned = cleaned.replace(/"([^"]+?)\s*:/g, function(match, key) {
+    return '"' + key.trim() + '":';
+  });
+  
+  // ✅ Fix colon inside strings (e.g., "https://" gets escaped)
+  cleaned = cleaned.replace(/(https?):\/\//g, '$1:\\/\\/');
+  
+  // Fix single quotes
+  cleaned = cleaned.replace(/:\s*'([^']*)'/g, ':"$1"');
+  
+  // Remove control characters
+  cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, "");
+  
+  // Final cleanup for common JSON issues
+  cleaned = cleaned.replace(/(\w+)\s*:/g, '"$1":');
+  
+  // Final cleanup: remove any remaining unquoted keys
+  cleaned = cleaned.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g, '$1"$2"$3');
+  
+  // Fix missing commas: "value" "key" -> "value", "key"
+  cleaned = cleaned.replace(/"}\s*"/g, '"}, "');
+  
+  // Fix missing colons: { "key" "value" } -> { "key": "value" }
+  cleaned = cleaned.replace(/"([^"]+)"\s+"([^"]+)"/g, '"$1": "$2"');
+  
+  // Fix escaped quotes inside JSON strings
+  cleaned = cleaned.replace(/\\"(?=[^:]*?")/g, '"');
+  
+  return cleaned;
 }
 
 export async function generatePageContent(
@@ -86,39 +161,26 @@ export async function generatePageContent(
   try {
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    
-    // ✅ Try multiple ways to extract JSON
-    let jsonStr = text;
-    
-    // Remove markdown code blocks if present
-    jsonStr = jsonStr.replace(/```json\s*/g, "").replace(/```\s*/g, "");
-    
-    // Try to find JSON object in the text
-    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      jsonStr = jsonMatch[0];
-    }
-    
-    // ✅ Clean up common JSON issues
-    jsonStr = jsonStr
-      .replace(/\n/g, " ")  // Remove newlines
-      .replace(/,\s*}/g, "}")  // Remove trailing commas
-      .replace(/,\s*\]/g, "]")  // Remove trailing commas in arrays
-      .replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');  // Quote unquoted keys
-    
-    // ✅ Parse JSON with error handling
+
+    const cleanedJson = cleanJsonResponse(text);
+
     try {
-      return JSON.parse(jsonStr);
+      return JSON.parse(cleanedJson);
     } catch (parseError) {
-      // If parsing fails, try a more aggressive cleanup
-      const cleaned = jsonStr
-        .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":')
-        .replace(/:\s*'([^']*)'/g, ':"$1"');
-      
+      console.error("JSON parsing failed:", parseError);
+      console.log("Cleaned JSON:", cleanedJson);
+
+      // ✅ One more attempt: try to fix unescaped quotes more aggressively
+      const aggressiveClean = cleanedJson
+        .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g, '$1"$2"$3')
+        .replace(/:\s*"([^"]*?)"([^"]*?)"([^"]*?)"/g, ':"$1\\"$2\\"$3"')
+        .replace(/:\s*""/g, ':" "')
+        .replace(/([^\\])"([^"]*?)"([^"]*?)"([^"]*?)"/g, '$1"$2\\"$3\\"$4"');
+
       try {
-        return JSON.parse(cleaned);
+        return JSON.parse(aggressiveClean);
       } catch (e) {
-        console.error("JSON parsing failed:", e);
+        console.error("Aggressive cleanup also failed:", e);
         return getFallbackContent(intent, locale);
       }
     }
