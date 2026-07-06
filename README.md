@@ -56,14 +56,14 @@ The app uses a **provider-agnostic AI service layer**. Switching from Gemini to 
 ```env
 AI_PROVIDER=google  # or openai, anthropic
 AI_MODEL=gemini-2.5-flash
-
+```
 The architecture includes:
 
 AIService interface with parseIntent() and generateContent() methods
 
 Provider-specific implementations (Gemini, OpenAI, Anthropic)
 
-Factory pattern for provider selection ```
+Factory pattern for provider selection 
 
 ### 📊 Database Schema
 
