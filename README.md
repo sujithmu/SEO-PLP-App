@@ -63,9 +63,9 @@ AIService interface with parseIntent() and generateContent() methods
 
 Provider-specific implementations (Gemini, OpenAI, Anthropic)
 
-Factory pattern for provider selection
+Factory pattern for provider selection ```
 
-## 📊 Database Schema
+### 📊 Database Schema
 
 Pages Table
 Column	Type	Description
@@ -82,7 +82,7 @@ views	Int	Page view counter
 createdAt	DateTime	Creation timestamp
 updatedAt	DateTime	Last update timestamp
 
-## Intent JSON Structure
+### Intent JSON Structure
 
 {
   "style": "botanical",
@@ -99,7 +99,7 @@ updatedAt	DateTime	Last update timestamp
   ]
 }
 
-## Content JSON Structure
+### Content JSON Structure
 
 {
   "h1": "Botanical Living Room Wallpaper",
@@ -308,7 +308,7 @@ This file lists all published product listing pages for AI crawlers.
   </url>
 </urlset>
 
-## 🛠️ Installation
+### 🛠️ Installation
 
 Prerequisites
 Node.js 18+ (Download)
@@ -367,7 +367,7 @@ Click "Install"
 
 Authorize the app
 
-## 🧪 Testing
+### 🧪 Testing
 
 End-to-End Flow
 Upload CSV – Go to /app/upload and upload a CSV file
@@ -401,7 +401,7 @@ floral wallpaper bedroom
 textured wallpaper dining room
 sustainable midnight blue wallpaper kids room
 
-## 📊 Prompt Strategy
+### 📊 Prompt Strategy
 How Content is Differentiated
 The AI prompt includes multiple factors to ensure unique content:
 
@@ -430,7 +430,7 @@ The prompt explicitly instructs the AI to:
 
 "Reference the specific products available"
 
-## 🐛 Known Gaps & What's Next
+### 🐛 Known Gaps & What's Next
 Current Limitations
 Issue	Description	Priority
 Similarity Check	No automatic check before publishing to prevent cannibalization	High
@@ -480,7 +480,7 @@ Phase 3 (Future)
 
 🔄 A/B Testing – Test different AI-generated content variations
 
-## 📦 Tech Stack
+### 📦 Tech Stack
 Category	Technology
 Framework	Shopify Remix (React Router v7)
 Language	TypeScript
@@ -492,7 +492,7 @@ UI Components	Polaris (Shopify design system)
 Hosting	ngrok (development)
 Authentication	Shopify OAuth
 
-## 📁 Project Structure
+### 📁 Project Structure
 text
 seo-plp-app/
 ├── app/
@@ -526,7 +526,7 @@ seo-plp-app/
 ├── postcss.config.js
 └── README.md
 
-## 📊 Architecture Diagram
+### 📊 Architecture Diagram
 
 ┌─────────────────────────────────────────────────────────────────┐
 │                          Merchant UI                           │
