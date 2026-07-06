@@ -83,7 +83,7 @@ createdAt	DateTime	Creation timestamp
 updatedAt	DateTime	Last update timestamp
 
 ### Intent JSON Structure
-
+```
 {
   "style": "botanical",
   "room": "living room",
@@ -98,9 +98,10 @@ updatedAt	DateTime	Last update timestamp
     "botanical wallpaper bedroom"
   ]
 }
+```
 
 ### Content JSON Structure
-
+```
 {
   "h1": "Botanical Living Room Wallpaper",
   "intro": "Welcome to our exquisite collection...",
@@ -121,6 +122,7 @@ updatedAt	DateTime	Last update timestamp
     "itemList": { "itemListElement": [] }
   }
 }
+```
 
 ### 🚀 Features
 
@@ -166,7 +168,7 @@ Why this matters:
 
 3. Intent Parsing
 Uses Google Gemini to extract structured data:
-
+```
 Input:"sustainable midnight blue wallpaper kids room"
 Output: 
 {
@@ -178,7 +180,7 @@ Output:
   "attributes": ["sustainable"],
   "confidence": 0.95
 }
-
+```
 4. Product Matching
 Searches Shopify products by title, tags, and collections
 
@@ -189,6 +191,7 @@ Pages with <6 products are flagged for review
 Matched products are stored in the database with AI-generated alt text
 
 5. AI Content Generation
+```
 Generates complete PLP content:
 {
   "h1": "Botanical Living Room Wallpaper",
@@ -203,6 +206,7 @@ Generates complete PLP content:
   "meta_title": "Botanical Living Room Wallpaper | Nature Inspired Walls",
   "meta_description": "Transform your living room with our stunning botanical wallpaper collection."
 }
+```
 
 6. Multi-locale Support
 
@@ -215,7 +219,7 @@ en-ca	Metric (cm)	CAD	"wallpaper paste"
 Adding a New Locale:
 
 Add config in app/services/locale.service.ts
-
+```
 "en-de": {
   code: "en-de",
   language: "English",
@@ -223,6 +227,7 @@ Add config in app/services/locale.service.ts
   currency: "EUR",
   terminology: { wallpaper: "wallpaper", adhesive: "wallpaper paste" }
 }
+```
 No code changes required – the app automatically supports new locales.
 
 7. Technical SEO
@@ -287,7 +292,7 @@ This file lists all published product listing pages for AI crawlers.
 
 - peel and stick wallpaper for renters (en-us) → /pages/peel-and-stick-wallpaper-for-renters-en-us
 - botanical wallpaper living room (en-au) → /pages/botanical-wallpaper-living-room-en-au
-
+```
 /sitemap-ai.xml – Metadata-rich sitemap for AI crawlers
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -307,6 +312,7 @@ This file lists all published product listing pages for AI crawlers.
     </ai:metadata>
   </url>
 </urlset>
+```
 
 ### 🛠️ Installation
 
